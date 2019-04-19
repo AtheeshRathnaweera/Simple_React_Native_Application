@@ -7,7 +7,7 @@
  */
 
 import React, {Component} from 'react';
-import { Alert, AppRegistry, Platform, StyleSheet, Text,Button, View, TextInput, TouchableOpacity } from 'react-native';
+import { ToastAndroid, Alert, AppRegistry, Platform, StyleSheet, Text,Button, View, TextInput, TouchableOpacity } from 'react-native';
 
 const instructions = Platform.select({
   ios: 'Press Cmd+R to reload,\n' + 'Cmd+D or shake for dev menu',
@@ -21,41 +21,117 @@ export default class App extends Component<Props> {
 
     constructor(){
            super()
-           this.state={}
+           this.state={
+           resultText:"",
+           calculationTxt: ""
+           }
+           this.operations = ["Del","C","+","-","*","/"]
 
     }
 
+    calculateResult(){
+        const text = this.state.resultText
+        this.setState({
+            calculationTxt: eval(text),
+            resultText: eval(text) + ''
+
+        })
+
+    }
+
+    validate(){
+        const text = this.state.resultText
+        switch(text.slice(-1)){
+            case '+':
+            case '-':
+            case '*':
+            case '/':
+
+                 return false
+        }
+        return true
+
+    }
+
+    buttonPressed(text){
+        //Alert.alert('Clicked : '+text);
+        //ToastAndroid.show('This is the number : '+text, ToastAndroid.SHORT);
+        if(text == '='){
+            return this.validate() && this.calculateResult()
+        }else{
+             this.setState({
+                 resultText: this.state.resultText + text
+            })
+
+        }
+
+    }
+
+    operate(operation){
+    switch(operation){
+        case 'Del' :
+            let text = this.state.resultText.split('')
+            text.pop()
+            text.join('')
+            this.setState({
+                resultText: text.join('')
+            })
+            break
+        case 'C' :
+              this.setState({
+                    resultText: "",
+                    calculationTxt: ""
+               })
+               break
+        case '+' :
+        case '-' :
+        case '*' :
+        case '/' :
+            const lastChar = this.state.resultText.split('').pop()
+
+            if(this.operations.indexOf(lastChar) > 0 || lastChar == ''){
+                return
+            }
+            if(this.state.text == "" || this.state.text ){
+                    return
+            }else{
+            this.setState({
+                resultText: this.state.resultText + operation
+            })}
+    }
+    }
 
 
    render() {
 
         let rows = []
-        let nums = [[1,2,3],[4,5,6],[7,8,9],['.',0,'=']]
+        let nums = [[7,8,9],[4,5,6],[1,2,3],['.',0,'=']]
            for(let i = 0; i<4; i++){
                 let row = []
                for(let j=0; j<3 ; j++){
-                    row.push( <TouchableOpacity style={styles.btn}>
+                    row.push( <TouchableOpacity style={styles.btn} onPress={() => this.buttonPressed(nums[i][j])}>
                                  <Text style={styles.singlebutton}>{nums[i][j]}</Text>
                               </TouchableOpacity>)
                }
                rows.push(<View style={styles.row}>{row}</View>)
            }
 
-           let operations = ["+","-","*","/"]
+
            let ops = []
-           for(let k = 0; k < 4;k++){
-                ops.push(<TouchableOpacity  style={styles.operationsbtn}>
-                                <Text style={[styles.blacktext]}>{operations[k]}</Text>
+           for(let k = 0; k < 6; k++){
+                ops.push(
+                <TouchableOpacity  style={styles.operationsbtn} onPress={()=>this.operate(this.operations[k])}>
+                                <Text style={[styles.blacktext]}>{this.operations[k]}</Text>
                          </TouchableOpacity>)
            }
 
      return (
        <View style={styles.container}>
                 <View style={styles.result}>
-                     <Text style={styles.resultText}>11*11</Text>
+                     <Text style={styles.resultText}>{this.state.calculationTxt}</Text>
                 </View>
                 <View style={styles.calculation}>
-                       <Text style={styles.calculationText}>11*11</Text></View>
+                       <Text style={styles.calculationText}>{this.state.resultText}</Text></View>
                 <View style={styles.buttons}>
                     <View style={styles.numbers}>
                             {rows}
@@ -110,12 +186,14 @@ export default class App extends Component<Props> {
 
     },
    resultText:{
-    fontSize: 27,
-    color: 'black'
+    fontSize: 32,
+    color: 'black',
+    marginRight: 10
    },
    calculationText: {
-            color: 'black',
-            fontSize: 24
+      color: 'black',
+      fontSize: 24,
+      marginRight: 10
    },
    singlebutton:{
         flex:1,
